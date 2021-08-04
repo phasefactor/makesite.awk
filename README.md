@@ -12,18 +12,22 @@ Alternately, set the file executable:
 chmod +x makesite.awk
 ./makesite.awk
 ```
-By default expects a `./src` directory and `./template.html` to exist, then deletes `./site` directory and rebuilds it with the output.
+By default expects a `./src` directory and `./template.html` to exist.  Then  `./site` directory and subdirectories are built if needed.
+
+Only files that have newer modified dates in the `input_dir` than in `output_dir` (or that do not exist in `output_dir`) are copied.
+
+Expects a utility specified in the `md2html` variable to exist for converting MD to HTML. Something like [md2html.awk](https://github.com/quBASIC/md2html.awk).
 
 
 ## Thoughts on the Implementation
 Very simple implementation; only uses the BEGIN pattern.
 
-Reads `./template.html` file line by line, makes substitution of {{date}}/{{curr_date}}, saves the template lines.
+Loops through `input_dir`and any subdirectories, makes sure the directories exist in `output_dir`, and then any files found in `input_dir` that do not exist or are out of date have their filenames stored in `files[]`.
 
-Wipes out the `output_dir` and then loops through `input_dir`.  Any subdirectories found in `input_dir` are recreated and filenames are stored in `files[]`.
+If `files[]` is non-empty, then read `./template.html` file line by line making substitutions for {{date}}/{{curr_date}}, saves the template into `template[]`.
 
-Loops through `files[]`.  If the file does not have a `.md` extension, then it is copied to `output_dir`.
+Loops through `files[]`,  copy non-`.md` files to their destinations, and write `.md` files out as `.html`.
 
-If is an `.md` file, then the template is looped through line by line and printed into the output file.  When the {{content}} string is found the `.md` file's contents are processed by the external utility specified by `md2html` and dumped into that line in the output file. 
+The template is looped through line by line and printed into the `.html` output file.  When the {{content}} string is found the `.md` file's contents are processed by the external utility specified by `md2html` and dumped into that line in the output file. 
 
-Probably better if the modified dates for file in the `input_dir` are compared with `output_dir` and only newer files are updated.  Maybe next revision. 
+
