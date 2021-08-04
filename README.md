@@ -1,7 +1,7 @@
 # makesite.awk
 Loops through the files in `input_dir` (`./src` by default) and outputs the processed files into `output_dir` (`./site` by default).
 
-Only modifies `.md` files.  Everything else is just copied from `input_dir` to `output_dir`.
+Only modifies `.md` files.  Other filetypes just copied from `input_dir` to `output_dir`.  Only updates files in `output_dir` that are older than the versions in `input_dir`.  
 
 Current version will react poorly if two or more of {{content}}, {{script}}, or {{style}} being on the same line of the template.
 
