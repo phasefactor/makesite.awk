@@ -3,7 +3,7 @@
 # makesite.awk
 #
 # Recurse a directory converting MD to HTML and
-# copying files into an output directory - v2
+# copying files into an output directory - v3
 #
 # Usage:
 # awk -f makesite.awk 
@@ -27,6 +27,8 @@ BEGIN {
     input_dir     = "./src";
     output_dir    = "./site";
     template_file = "./template.html";
+    style_file    = "./style.css";
+    script_file   = "./script.js";
     md2html       = "./md2html.awk";
     
     # run date and store the result for later
@@ -66,7 +68,8 @@ BEGIN {
                 sub(/\.(md|MD|Md|mD)$/, ".html", name);
 
             # get modified time on potential output file
-            # -q suppresses errors messages,
+            # -q suppresses errors messages, reset to zero
+            output_modified = 0;
             "stat -q -f '%m' '" output_dir subdir "/" name "'" | getline output_modified;
 
             # get modified time on input file
@@ -122,17 +125,39 @@ BEGIN {
         
         # process the template line by line
         for (i=1; i<template_size; i++) { 
+            # tracking state
+            subst_made = 0;
+            
             # does line contain {{contents}} tag? 
-            if (template[i] ~ /\{\{content(s)?\}\}/){
-                # this actually replaces the whole template line
-                # with the contents of the file... may not be ideal...
-                # maybe substr() to grab what is before and after?
+            if (match(template[i], /\{\{content(s)?\}\}/)) {
+                print substr(template[i], 0, RSTART-1) >> output;
                 
                 # push markdown through md2html.awk
                 printf("processing MarkDown... ");
                 system(md2html " '" file "' >> '" output "'");
-            } else {
-                # no replacement made, output as is
+                
+                print substr(template[i], RSTART+RLENGTH) >> output;
+                subst_made++;
+            }    
+            
+            # insert style
+            if (match(template[i], /\{\{style\}\}/)) {
+                print substr(template[i], 0, RSTART-1) >> output;
+                system("cat '" style_file "' >> '" output "'");
+                print substr(template[i], RSTART+RLENGTH) >> output;
+                subst_made++;
+            } 
+            
+            # insert script
+            if (match(template[i], /\{\{script\}\}/)) {
+                print substr(template[i], 0, RSTART-1) >> output;
+                system("cat '" script_file "' >> '" output "'");
+                print substr(template[i], RSTART+RLENGTH) >> output;
+                subst_made++;
+            } 
+            
+            # no substitutions made, just output the line
+            if (subst_made == 0) {
                 print template[i] >> output;
             } 
         }
