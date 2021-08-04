@@ -37,6 +37,10 @@ BEGIN {
     print "\nScanning input directory (" input_dir ")";
     cmd = "ls -1Rp " input_dir;
     
+    # make sure the output_dir exists
+    if ("stat -q -f '%m' '"output_dir "'" | getline == 0)
+        system("mkdir '" output_dir "'");
+    
     while ((cmd | getline) > 0){
         # skip blank lines and subdirectories in the list
         if ($0 ~ /^$/ || /\/$/) {
