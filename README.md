@@ -3,6 +3,8 @@ Loops through the files in `input_dir` (`./src` by default) and outputs the proc
 
 Only modifies `.md` files.  Everything else is just copied from `input_dir` to `output_dir`.
 
+Current version will react poorly if two or more of {{content}}, {{script}}, or {{style}} being on the same line of the template.
+
 ## Usage
 ```
 awk -f makesite.awk
@@ -18,6 +20,7 @@ Only files that have newer modified dates in the `input_dir` than in `output_dir
 
 Expects a utility specified in the `md2html` variable to exist for converting MD to HTML. Something like [md2html.awk](https://github.com/quBASIC/md2html.awk).
 
+If {{style}} or {{script}} are used in the template, then the `style_file` and `script_file` variables need to point somewhere (defaults are `./style.css` and `./script.js`).  Currently does not validate that the files exist.  If they are missing an error will appear in the console output and nothing in the output files.
 
 ## Thoughts on the Implementation
 Very simple implementation; only uses the BEGIN pattern.
@@ -28,6 +31,8 @@ If `files[]` is non-empty, then read `./template.html` file line by line making 
 
 Loops through `files[]`,  copy non-`.md` files to their destinations, and write `.md` files out as `.html`.
 
-The template is looped through line by line and printed into the `.html` output file.  When the {{content}} string is found the `.md` file's contents are processed by the external utility specified by `md2html` and dumped into that line in the output file. 
+The template is looped through line by line and printed into the `.html` output file.  
 
+When the {{content}} string is found the `.md` file's contents are processed by the external utility specified by `md2html` and dumped into that line in the output file. 
 
+When the {{style}} or {{script}} strings are encountered the correct file is injected into the output.
