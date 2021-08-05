@@ -123,6 +123,9 @@ BEGIN {
             continue;
         }
         
+        # clear the output file's contents
+        system("echo '' > '" output "'");
+        
         # process the template line by line
         for (i=1; i<template_size; i++) { 
             # tracking state
