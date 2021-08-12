@@ -32,8 +32,8 @@ BEGIN {
     md2html       = "./md2html.awk";
     
     # run date and store the result for later
-    "date '+%Y-%m-%d'" | getline date_string;
-               
+    "date '+%Y-%m-%d'" | getline date_string; 
+    close("date '+%Y-%m-%d'"); 
 
     # recursively descend the input directory
     print "\nScanning input directory (" input_dir ")";
@@ -42,6 +42,9 @@ BEGIN {
     # make sure the output_dir exists
     if ("stat -q -f '%m' '"output_dir "'" | getline == 0)
         system("mkdir '" output_dir "'");
+    close("stat -q -f '%m' '"output_dir "'");
+    
+    
     
     while ((cmd | getline) > 0){
         # skip blank lines and subdirectories in the list
@@ -58,6 +61,8 @@ BEGIN {
             if ("stat -q -f '%m' '" output_dir subdir "'" | getline == 0) {
                 system("mkdir '" output_dir subdir "'");
             }
+            close("stat -q -f '%m' '" output_dir subdir "'");
+
         # should only be files, maybe add check for symlinks?    
         } else {
             # save the name into a temp variable
@@ -71,9 +76,11 @@ BEGIN {
             # -q suppresses errors messages, reset to zero
             output_modified = 0;
             "stat -q -f '%m' '" output_dir subdir "/" name "'" | getline output_modified;
+            close("stat -q -f '%m' '" output_dir subdir "/" name "'");
 
             # get modified time on input file
             "stat -f '%m' '" input_dir subdir "/" $0 "'" | getline input_modified;
+            close("stat -f '%m' '" input_dir subdir "/" $0 "'");
 
             # is input file modified more recently?
             # or does the output not exist? (suppressed error returns 0)
